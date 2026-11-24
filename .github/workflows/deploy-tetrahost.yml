@@ -2,6 +2,11 @@ name: Upload Nabeman site to Tetrahost
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm_live_sync:
+        description: "Type SYNCED only after the live Tetrahost files have been backed up and compared"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -12,6 +17,16 @@ jobs:
     steps:
       - name: Check out Nabeman repository
         uses: actions/checkout@v4
+
+      - name: Safety check - require explicit live-site sync confirmation
+        env:
+          CONFIRM_LIVE_SYNC: ${{ inputs.confirm_live_sync }}
+        run: |
+          set -eu
+          if [ "$CONFIRM_LIVE_SYNC" != "SYNCED" ]; then
+            echo 'STOP: Type SYNCED only after backing up and comparing the current live Tetrahost files.'
+            exit 1
+          fi
 
       - name: Safety check - require actual website files
         run: |
