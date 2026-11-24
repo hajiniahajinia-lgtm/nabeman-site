@@ -1,0 +1,53 @@
+name: Deploy login.php only to Tetrahost
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_login_upload:
+        description: "Type LOGIN_ONLY to upload only login.php (existing remote login.php will be replaced)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  upload-login:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Safety check
+        env:
+          CONFIRM_LOGIN_UPLOAD: ${{ inputs.confirm_login_upload }}
+        run: |
+          set -eu
+          if [ "$CONFIRM_LOGIN_UPLOAD" != "LOGIN_ONLY" ]; then
+            echo "STOP: Type LOGIN_ONLY to confirm a single-file upload."
+            exit 1
+          fi
+          test -f login.php
+          grep -q "بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيمِ" login.php
+
+      - name: Upload only login.php (no delete, no mirror)
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+        run: |
+          set -eu
+          test -n "$FTP_SERVER"
+          test -n "$FTP_USERNAME"
+          test -n "$FTP_PASSWORD"
+          test -n "$FTP_REMOTE_DIR"
+          sudo apt-get update
+          sudo apt-get install -y lftp
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" -e "
+            set ftp:ssl-allow yes;
+            set ftp:ssl-protect-data yes;
+            cd '$FTP_REMOTE_DIR';
+            put login.php -o login.php;
+            bye
+          "
