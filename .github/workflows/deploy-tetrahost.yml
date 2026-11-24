@@ -1,0 +1,51 @@
+name: Upload Nabeman site to Tetrahost
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Nabeman repository
+        uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Upload files without deleting remote files
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+        run: |
+          set -eu
+          test -n "$FTP_SERVER"
+          test -n "$FTP_USERNAME"
+          test -n "$FTP_PASSWORD"
+          test -n "$FTP_REMOTE_DIR"
+
+          # Reverse mirror uploads new/changed files only. Intentionally no --delete.
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" -e "
+            set ftp:ssl-allow yes;
+            set ftp:ssl-protect-data yes;
+            mirror --reverse --verbose
+              --exclude-glob .git/
+              --exclude-glob .github/
+              --exclude-glob README.md
+              --exclude-glob '*.sql'
+              --exclude-glob '*.zip'
+              --exclude-glob '*.bak'
+              --exclude-glob '.env'
+              --exclude-glob '.env.*'
+              --exclude-glob 'config.php'
+              --exclude-glob 'db.php'
+              ./ '$FTP_REMOTE_DIR';
+            bye
+          "
