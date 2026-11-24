@@ -1,0 +1,23 @@
+<?php
+/**
+ * نمونه تنظیم اتصال دیتابیس برای Nabeman.ir روی Tetrahost
+ * این فایل را روی هاست با نام db.php ذخیره کنید.
+ * مقادیر واقعی را فقط در هاست وارد کنید؛ هرگز این فایل را با رمز واقعی در GitHub قرار ندهید.
+ */
+
+$host = 'DB_HOST_FROM_CPANEL';
+$user = 'DB_USERNAME_FROM_CPANEL';
+$password = 'PUT_DATABASE_PASSWORD_HERE';
+$database = 'DB_NAME_FROM_CPANEL';
+$port = 3306;
+
+mysqli_report(MYSQLI_REPORT_OFF);
+$conn = @new mysqli($host, $user, $password, $database, $port);
+
+if ($conn->connect_errno) {
+    error_log('Nabeman database connection failed: ' . $conn->connect_error);
+    http_response_code(500);
+    exit('خطا در اتصال به پایگاه داده. تنظیمات اتصال را بررسی کنید.');
+}
+
+$conn->set_charset('utf8mb4');
