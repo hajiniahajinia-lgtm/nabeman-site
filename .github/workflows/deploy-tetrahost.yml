@@ -13,6 +13,15 @@ jobs:
       - name: Check out Nabeman repository
         uses: actions/checkout@v4
 
+      - name: Safety check - require actual website files
+        run: |
+          set -eu
+          if [ ! -f index.php ] && [ ! -f index.html ]; then
+            echo 'STOP: No index.php or index.html found in repository root.'
+            echo 'Sync the current live Nabeman site files from Tetrahost before deploying.'
+            exit 1
+          fi
+
       - name: Install lftp
         run: |
           sudo apt-get update
@@ -31,13 +40,14 @@ jobs:
           test -n "$FTP_PASSWORD"
           test -n "$FTP_REMOTE_DIR"
 
-          # Reverse mirror uploads new/changed files only. Intentionally no --delete.
+          # Upload only; intentionally no --delete. Existing remote files are not removed.
           lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" -e "
             set ftp:ssl-allow yes;
             set ftp:ssl-protect-data yes;
             mirror --reverse --verbose
               --exclude-glob .git/
               --exclude-glob .github/
+              --exclude-glob docs/
               --exclude-glob README.md
               --exclude-glob '*.sql'
               --exclude-glob '*.zip'
