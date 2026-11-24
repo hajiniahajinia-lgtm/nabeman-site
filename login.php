@@ -192,6 +192,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <title>ورود به سامانه</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
 body {
@@ -307,6 +310,22 @@ a {
 a:hover {
     text-decoration:underline;
 }
+.bismillah {
+    font-family: "Noto Nastaliq Urdu", "Noto Naskh Arabic", serif;
+    font-size: 27px;
+    line-height: 2.2;
+    font-weight: 500;
+    text-align: center;
+    color: #79552c;
+    margin: 0 0 18px;
+}
+
+@media (max-width: 480px) {
+    .bismillah {
+        font-size: 23px;
+        line-height: 2.1;
+    }
+}
 </style>
 </head>
 
@@ -314,6 +333,7 @@ a:hover {
 
 
 <div class="container">
+    <div class="bismillah" lang="ar" dir="rtl">بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيمِ</div>
     <h2>ورود به سامانه</h2>
 
     <?php if($message): ?>
