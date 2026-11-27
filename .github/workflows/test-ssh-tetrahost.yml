@@ -10,20 +10,18 @@ jobs:
   ssh-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare SSH key
+      - name: Prepare SSH credentials and pinned host key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.TETRA_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.TETRA_SSH_KNOWN_HOSTS }}
         run: |
           set -eu
           test -n "$SSH_PRIVATE_KEY"
+          test -n "$SSH_KNOWN_HOSTS"
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/tetrahost_key
-          chmod 600 ~/.ssh/tetrahost_key
-
-      - name: Add host key for initial connection
-        run: |
-          set -eu
-          ssh-keyscan -p 22 sam.tetrahost.ir >> ~/.ssh/known_hosts
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/tetrahost_key ~/.ssh/known_hosts
 
       - name: Test SSH authentication and inspect web root (no changes)
         run: |
